@@ -1,36 +1,34 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
-from datetime import datetime
 import os
-from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  # Needed for flash messages
 
-# Set the path for the SQLite database file
-db_path = os.path.join('G:/My Drive/web_app/anchor/', 'reports.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+# Configuration for PostgreSQL
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Set the upload folder paths
-app.config['UPLOAD_FOLDER'] = 'G:/My Drive/web_app/anchor/uploads'
-app.config['IMAGE_UPLOAD_FOLDER'] = 'G:/My Drive/web_app/anchor/uploads/images'
-app.config['MAX_CONTENT_PATH'] = 16 * 1024 * 1024  # Max file size: 16MB
-
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
+# Define your models here
 class Report(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(10), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
+    date = db.Column(db.String(20), nullable=False)
+    category = db.Column(db.String(20), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    author = db.Column(db.String(100), nullable=False)
+    author = db.Column(db.String(50), nullable=False)
     filename = db.Column(db.String(100), nullable=False)
     image_filename = db.Column(db.String(100), nullable=True)
     share_regions = db.Column(db.String(100), nullable=False)
-    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+    upload_date = db.Column(db.DateTime, nullable=False)
+
+@app.route('/')
+def index():
+    reports = Report.query.all()
+    return render_template('index.html', reports=reports)
 
 # Create the uploads directory if it doesn't exist
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -140,6 +138,7 @@ def edit_report(report_id):
         image_filename = secure_filename(image_file.filename)
         image_file.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], image_filename))
         report.image_filename = image_filename
+
 
     db.session.commit()
     flash('Report successfully updated')
