@@ -1,44 +1,43 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
+from sqlalchemy import text
+from datetime import datetime
+from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
 load_dotenv()  # Load environment variables from .env file
 
 app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'supersecretkey')
 
-# Configuration for database
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
+# Database configuration
+db_path = os.path.join(os.getenv('DATABASE_DIR', ''), 'reports.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+# Set the upload folder paths
+app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
+app.config['IMAGE_UPLOAD_FOLDER'] = os.getenv('IMAGE_UPLOAD_FOLDER', 'uploads/images')
+app.config['MAX_CONTENT_PATH'] = 16 * 1024 * 1024  # Max file size: 16MB
 
-# Define your models here
+db = SQLAlchemy(app)
+
 class Report(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    date = db.Column(db.String(20), nullable=False)
-    category = db.Column(db.String(20), nullable=False)
+    date = db.Column(db.String(10), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    author = db.Column(db.String(50), nullable=False)
+    author = db.Column(db.String(100), nullable=False)
     filename = db.Column(db.String(100), nullable=False)
     image_filename = db.Column(db.String(100), nullable=True)
     share_regions = db.Column(db.String(100), nullable=False)
-    upload_date = db.Column(db.DateTime, nullable=False)
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
 
-@app.route('/')
-def index():
-    reports = Report.query.all()
-    return render_template('index.html', reports=reports)
-
-# Create the uploads directory if it doesn't exist
-if not os.path.exists(app.config['UPLOAD_FOLDER']):
-    os.makedirs(app.config['UPLOAD_FOLDER'])
-
-if not os.path.exists(app.config['IMAGE_UPLOAD_FOLDER']):
-    os.makedirs(app.config['IMAGE_UPLOAD_FOLDER'])
+# Create the uploads directories if they don't exist
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['IMAGE_UPLOAD_FOLDER'], exist_ok=True)
 
 # User's login details
 stored_email = "a123456"
@@ -142,7 +141,6 @@ def edit_report(report_id):
         image_file.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], image_filename))
         report.image_filename = image_filename
 
-
     db.session.commit()
     flash('Report successfully updated')
     return redirect(url_for('dashboard'))
@@ -163,19 +161,7 @@ def allowed_image_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Add a route to perform the schema update
-@app.route("/update_db")
-def update_db():
-    with app.app_context():
-        db.session.execute(text('ALTER TABLE report ADD COLUMN image_filename VARCHAR(100)'))
-        db.session.execute(text('ALTER TABLE report ADD COLUMN share_regions VARCHAR(100)'))
-        db.session.commit()
-    return "Database updated!"
-
 if __name__ == "__main__":
-    # Ensure the directory exists
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-    
     with app.app_context():
         db.create_all()
     app.run(debug=True)
