@@ -3,48 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Report</title>
+    <title>Edit Report</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
 <div class="container mt-5">
-    <h1>Upload Report</h1>
+    <h1>Edit Report</h1>
     <form method="post" enctype="multipart/form-data">
         <div class="form-group">
             <label for="title">Title</label>
-            <input type="text" class="form-control" id="title" name="title" required>
+            <input type="text" class="form-control" id="title" name="title" value="{{ report.title }}" required>
         </div>
         <div class="form-group">
             <label for="date">Date</label>
-            <input type="text" class="form-control" id="date" name="date" required>
+            <input type="text" class="form-control" id="date" name="date" value="{{ report.date }}" required>
         </div>
         <div class="form-group">
             <label for="category">Category</label>
             <select class="form-control" id="category" name="category" required>
-                <option value="貨幣">貨幣</option>
-                <option value="股價">股價</option>
-                <option value="地產">地產</option>
-                <option value="零售">零售</option>
-                <option value="能源">能源</option>
-                <option value="食物">食物</option>
+                <option value="貨幣" {% if report.category == '貨幣' %}selected{% endif %}>貨幣</option>
+                <option value="股價" {% if report.category == '股價' %}selected{% endif %}>股價</option>
+                <option value="地產" {% if report.category == '地產' %}selected{% endif %}>地產</option>
+                <option value="零售" {% if report.category == '零售' %}selected{% endif %}>零售</option>
+                <option value="能源" {% if report.category == '能源' %}selected{% endif %}>能源</option>
+                <option value="食物" {% if report.category == '食物' %}selected{% endif %}>食物</option>
             </select>
         </div>
         <div class="form-group">
             <label for="content">Content</label>
-            <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+            <textarea class="form-control" id="content" name="content" rows="3" required>{{ report.content }}</textarea>
         </div>
         <div class="form-group">
             <label for="author">Author</label>
-            <input type="text" class="form-control" id="author" name="author" required>
+            <input type="text" class="form-control" id="author" name="author" value="{{ report.author }}" required>
         </div>
         <div class="form-group">
             <label for="share_regions">Share Regions</label>
             <select multiple class="form-control" id="share_regions" name="share_regions" required>
-                <option value="JP">JP</option>
-                <option value="TW">TW</option>
-                <option value="SG">SG</option>
-                <option value="HK">HK</option>
-                <option value="UK">UK</option>
+                <option value="JP" {% if 'JP' in report.share_regions %}selected{% endif %}>JP</option>
+                <option value="TW" {% if 'TW' in report.share_regions %}selected{% endif %}>TW</option>
+                <option value="SG" {% if 'SG' in report.share_regions %}selected{% endif %}>SG</option>
+                <option value="HK" {% if 'HK' in report.share_regions %}selected{% endif %}>HK</option>
+                <option value="UK" {% if 'UK' in report.share_regions %}selected{% endif %}>UK</option>
             </select>
         </div>
         <div class="form-group">
@@ -55,7 +55,7 @@
             <label for="image">Upload Image</label>
             <input type="file" class="form-control-file" id="image" name="image">
         </div>
-        <button type="submit" class="btn btn-primary">Upload Report</button>
+        <button type="submit" class="btn btn-primary">Update Report</button>
     </form>
 </div>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

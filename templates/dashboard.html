@@ -4,213 +4,201 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <!-- Include Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f6;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .report {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        .report img {
-            margin-right: 20px;
-            max-width: 150px;
-            max-height: 200px;
-        }
-        .report-details {
-            flex-grow: 1;
-        }
-        .report h3 {
-            margin: 0;
-            padding: 0;
-        }
-        .report p {
-            margin: 5px 0;
-        }
-        .download-link {
-            color: #4CAF50;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .download-link:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container text-center">
-        <h2>Welcome to the Dashboard!</h2>
-        <form action="{{ url_for('logout') }}" method="post">
-            <button type="submit" class="btn btn-danger">Log Out</button>
-        </form>
-        <button type="button" class="btn btn-primary mt-3" data-toggle="modal" data-target="#uploadModal">Upload New Report</button>
-    </div>
-
-    {% for report in reports %}
-    <div class="container report">
-        {% if report.image_filename %}
-        <img src="{{ url_for('uploaded_file', filename=report.image_filename) }}" alt="Report Image">
-        {% endif %}
-        <div class="report-details">
-            <h3>{{ report.title }}</h3>
-            <p><strong>日期:</strong> {{ report.date }}</p>
-            <p><strong>報告分類:</strong> {{ report.category }}</p>
-            <p><strong>報告內容:</strong> {{ report.content }}</p>
-            <p><strong>作者:</strong> {{ report.author }}</p>
-            <p><strong>分享地區:</strong> {{ report.share_regions }}</p>
-            <p>
-                <a href="{{ url_for('download', report_id=report.id) }}" class="download-link">Download PDF</a>
-                <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#editModal{{ report.id }}">Edit</button>
-            </p>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between mb-3">
+        <h1>Report Dashboard</h1>
+        <div>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#uploadModal">Upload New Report</button>
+            <form action="{{ url_for('logout') }}" method="post" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
         </div>
     </div>
-    {% endfor %}
 
-    <!-- Upload Modal -->
-    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="uploadModalLabel">Upload New Report</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+    <div class="row mb-3">
+        <div class="col-md-2">
+            <div class="list-group">
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('ALL')">All</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('JP')">JP</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('TW')">TW</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('SG')">SG</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('HK')">HK</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('UK')">UK</button>
+            </div>
+        </div>
+        <div class="col-md-10">
+            <div id="report-list">
+                {% for report in reports %}
+                <div class="card mb-3 report-card" data-regions="{{ report.share_regions }}">
+                    <div class="row no-gutters">
+                        <div class="col-md-4">
+                            <img src="{{ url_for('uploaded_file', filename=report.image_filename) }}" class="card-img" alt="{{ report.title }}">
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ report.title }}</h5>
+                                <p class="card-text"><strong>日期:</strong> {{ report.date }}</p>
+                                <p class="card-text"><strong>報告分類:</strong> {{ report.category }}</p>
+                                <p class="card-text"><strong>報告內容:</strong> {{ report.content }}</p>
+                                <p class="card-text"><strong>作者:</strong> {{ report.author }}</p>
+                                <p class="card-text"><strong>分享地區:</strong> {{ report.share_regions }}</p>
+                                <a href="{{ url_for('download', report_id=report.id) }}" class="btn btn-success">Download PDF</a>
+                                <button class="btn btn-primary" data-toggle="modal" data-target="#editModal{{ report.id }}">Edit</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <form method="post" enctype="multipart/form-data" action="{{ url_for('upload') }}">
-                        <div class="form-group">
-                            <label for="title">Title:</label>
-                            <input type="text" class="form-control" id="title" name="title" required>
+
+                <!-- Edit Report Modal -->
+                <div class="modal fade" id="editModal{{ report.id }}" tabindex="-1" role="dialog" aria-labelledby="editModalLabel{{ report.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editModalLabel{{ report.id }}">Edit Report</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{{ url_for('edit_report', report_id=report.id) }}" method="post" enctype="multipart/form-data">
+                                    <div class="form-group">
+                                        <label for="title">Title</label>
+                                        <input type="text" class="form-control" name="title" value="{{ report.title }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="date">Date</label>
+                                        <input type="date" class="form-control" name="date" value="{{ report.date }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="category">Category</label>
+                                        <select class="form-control" name="category" required>
+                                            <option value="貨幣" {% if report.category == '貨幣' %}selected{% endif %}>貨幣</option>
+                                            <option value="股價" {% if report.category == '股價' %}selected{% endif %}>股價</option>
+                                            <option value="地產" {% if report.category == '地產' %}selected{% endif %}>地產</option>
+                                            <option value="零售" {% if report.category == '零售' %}selected{% endif %}>零售</option>
+                                            <option value="能源" {% if report.category == '能源' %}selected{% endif %}>能源</option>
+                                            <option value="食物" {% if report.category == '食物' %}selected{% endif %}>食物</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="content">Content</label>
+                                        <textarea class="form-control" name="content" rows="3" required>{{ report.content }}</textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="author">Author</label>
+                                        <input type="text" class="form-control" name="author" value="{{ report.author }}" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="share_regions">Share Regions</label>
+                                        <select multiple class="form-control" name="share_regions">
+                                            <option value="JP" {% if 'JP' in report.share_regions %}selected{% endif %}>JP</option>
+                                            <option value="TW" {% if 'TW' in report.share_regions %}selected{% endif %}>TW</option>
+                                            <option value="SG" {% if 'SG' in report.share_regions %}selected{% endif %}>SG</option>
+                                            <option value="HK" {% if 'HK' in report.share_regions %}selected{% endif %}>HK</option>
+                                            <option value="UK" {% if 'UK' in report.share_regions %}selected{% endif %}>UK</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="file">Upload PDF</label>
+                                        <input type="file" class="form-control-file" name="file">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="image">Upload Image</label>
+                                        <input type="file" class="form-control-file" name="image">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="date">Date:</label>
-                            <input type="date" class="form-control" id="date" name="date" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="category">Category:</label>
-                            <select class="form-control" id="category" name="category" required>
-                                <option value="貨幣">貨幣</option>
-                                <option value="股價">股價</option>
-                                <option value="地產">地產</option>
-                                <option value="零售">零售</option>
-                                <option value="能源">能源</option>
-                                <option value="食物">食物</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="content">Content:</label>
-                            <textarea class="form-control" id="content" name="content" rows="4" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="author">Author:</label>
-                            <input type="text" class="form-control" id="author" name="author" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="share_regions">分享地區:</label>
-                            <select class="form-control" id="share_regions" name="share_regions" multiple required>
-                                <option value="JP">JP</option>
-                                <option value="TW">TW</option>
-                                <option value="SG">SG</option>
-                                <option value="HK">HK</option>
-                                <option value="UK">UK</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="file">Upload PDF:</label>
-                            <input type="file" class="form-control-file" id="file" name="file" accept=".pdf" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="image">Upload Image (1080x1920):</label>
-                            <input type="file" class="form-control-file" id="image" name="image" accept=".png, .jpg, .jpeg">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Upload</button>
-                    </form>
+                    </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
     </div>
+</div>
 
-    {% for report in reports %}
-    <!-- Edit Modal -->
-    <div class="modal fade" id="editModal{{ report.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ report.id }}" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editModalLabel{{ report.id }}">Edit Report</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" enctype="multipart/form-data" action="{{ url_for('edit_report', report_id=report.id) }}">
-                        <div class="form-group">
-                            <label for="title">Title:</label>
-                            <input type="text" class="form-control" id="title" name="title" value="{{ report.title }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="date">Date:</label>
-                            <input type="date" class="form-control" id="date" name="date" value="{{ report.date }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="category">Category:</label>
-                            <select class="form-control" id="category" name="category" required>
-                                <option value="貨幣" {% if report.category == '貨幣' %}selected{% endif %}>貨幣</option>
-                                <option value="股價" {% if report.category == '股價' %}selected{% endif %}>股價</option>
-                                <option value="地產" {% if report.category == '地產' %}selected{% endif %}>地產</option>
-                                <option value="零售" {% if report.category == '零售' %}selected{% endif %}>零售</option>
-                                <option value="能源" {% if report.category == '能源' %}selected{% endif %}>能源</option>
-                                <option value="食物" {% if report.category == '食物' %}selected{% endif %}>食物</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="content">Content:</label>
-                            <textarea class="form-control" id="content" name="content" rows="4" required>{{ report.content }}</textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="author">Author:</label>
-                            <input type="text" class="form-control" id="author" name="author" value="{{ report.author }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="share_regions">分享地區:</label>
-                            <select class="form-control" id="share_regions" name="share_regions" multiple required>
-                                <option value="JP" {% if 'JP' in report.share_regions.split(',') %}selected{% endif %}>JP</option>
-                                <option value="TW" {% if 'TW' in report.share_regions.split(',') %}selected{% endif %}>TW</option>
-                                <option value="SG" {% if 'SG' in report.share_regions.split(',') %}selected{% endif %}>SG</option>
-                                <option value="HK" {% if 'HK' in report.share_regions.split(',') %}selected{% endif %}>HK</option>
-                                <option value="UK" {% if 'UK' in report.share_regions.split(',') %}selected{% endif %}>UK</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="file">Upload PDF:</label>
-                            <input type="file" class="form-control-file" id="file" name="file" accept=".pdf">
-                        </div>
-                        <div class="form-group">
-                            <label for="image">Upload Image (1080x1920):</label>
-                            <input type="file" class="form-control-file" id="image" name="image" accept=".png, .jpg, .jpeg">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
-                    </form>
-                </div>
+<!-- Upload New Report Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel">Upload New Report</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Date</label>
+                        <input type="date" class="form-control" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select class="form-control" name="category" required>
+                            <option value="貨幣">貨幣</option>
+                            <option value="股價">股價</option>
+                            <option value="地產">地產</option>
+                            <option value="零售">零售</option>
+                            <option value="能源">能源</option>
+                            <option value="食物">食物</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Content</label>
+                        <textarea class="form-control" name="content" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="author">Author</label>
+                        <input type="text" class="form-control" name="author" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="share_regions">Share Regions</label>
+                        <select multiple class="form-control" name="share_regions">
+                            <option value="JP">JP</option>
+                            <option value="TW">TW</option>
+                            <option value="SG">SG</option>
+                            <option value="HK">HK</option>
+                            <option value="UK">UK</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="file">Upload PDF</label>
+                        <input type="file" class="form-control-file" name="file">
+                    </div>
+                    <div class="form-group">
+                        <label for="image">Upload Image</label>
+                        <input type="file" class="form-control-file" name="image">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </form>
             </div>
         </div>
     </div>
-    {% endfor %}
+</div>
 
-    <!-- Include Bootstrap JS and dependencies -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    function filterReports(region) {
+        $('.report-card').each(function() {
+            var regions = $(this).data('regions').split(',');
+            if (region === 'ALL' || regions.includes(region)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+</script>
 </body>
 </html>
