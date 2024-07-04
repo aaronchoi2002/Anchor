@@ -67,47 +67,51 @@ def login():
 
 @app.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
-    if request.method == "POST":
-        return redirect(url_for('upload'))
-
-    reports = Report.query.all()
+    region = request.args.get("region")
+    if region:
+        reports = Report.query.filter(Report.share_regions.contains(region)).all()
+    else:
+        reports = Report.query.all()
     return render_template("dashboard.html", reports=reports)
 
-@app.route("/upload", methods=["POST"])
+@app.route("/upload", methods=["GET", "POST"])
 def upload():
-    title = request.form["title"]
-    date = request.form["date"]
-    category = request.form["category"]
-    content = request.form["content"]
-    author = request.form["author"]
-    share_regions = request.form.getlist("share_regions")
-    file = request.files["file"]
-    image_file = request.files["image"]
+    if request.method == "POST":
+        title = request.form["title"]
+        date = request.form["date"]
+        category = request.form["category"]
+        content = request.form["content"]
+        author = request.form["author"]
+        share_regions = request.form.getlist("share_regions")
+        file = request.files["file"]
+        image_file = request.files["image"]
 
-    filename = None
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        filename = None
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-    image_filename = None
-    if image_file and allowed_image_file(image_file.filename):
-        image_filename = secure_filename(image_file.filename)
-        image_file.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], image_filename))
+        image_filename = None
+        if image_file and allowed_image_file(image_file.filename):
+            image_filename = secure_filename(image_file.filename)
+            image_file.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], image_filename))
 
-    report = Report(
-        title=title,
-        date=date,
-        category=category,
-        content=content,
-        author=author,
-        filename=filename,
-        image_filename=image_filename,
-        share_regions=",".join(share_regions)
-    )
-    db.session.add(report)
-    db.session.commit()
-    flash('Report successfully uploaded')
-    return redirect(url_for('dashboard'))
+        report = Report(
+            title=title,
+            date=date,
+            category=category,
+            content=content,
+            author=author,
+            filename=filename,
+            image_filename=image_filename,
+            share_regions=",".join(share_regions)
+        )
+        db.session.add(report)
+        db.session.commit()
+        flash('Report successfully uploaded')
+        return redirect(url_for('dashboard'))
+
+    return render_template("upload.html")
 
 @app.route("/download/<int:report_id>")
 def download(report_id):
@@ -117,33 +121,36 @@ def download(report_id):
         return f"Error: The file {report.filename} does not exist."
     return send_file(file_path, as_attachment=True)
 
-@app.route("/edit_report/<int:report_id>", methods=["POST"])
+@app.route("/edit_report/<int:report_id>", methods=["GET", "POST"])
 def edit_report(report_id):
     report = Report.query.get_or_404(report_id)
-    report.title = request.form["title"]
-    report.date = request.form["date"]
-    report.category = request.form["category"]
-    report.content = request.form["content"]
-    report.author = request.form["author"]
-    share_regions = request.form.getlist("share_regions")
-    report.share_regions = ",".join(share_regions)
+    if request.method == "POST":
+        report.title = request.form["title"]
+        report.date = request.form["date"]
+        report.category = request.form["category"]
+        report.content = request.form["content"]
+        report.author = request.form["author"]
+        share_regions = request.form.getlist("share_regions")
+        report.share_regions = ",".join(share_regions)
 
-    file = request.files["file"]
-    image_file = request.files["image"]
+        file = request.files["file"]
+        image_file = request.files["image"]
 
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        report.filename = filename
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            report.filename = filename
 
-    if image_file and allowed_image_file(image_file.filename):
-        image_filename = secure_filename(image_file.filename)
-        image_file.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], image_filename))
-        report.image_filename = image_filename
+        if image_file and allowed_image_file(image_file.filename):
+            image_filename = secure_filename(image_file.filename)
+            image_file.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], image_filename))
+            report.image_filename = image_filename
 
-    db.session.commit()
-    flash('Report successfully updated')
-    return redirect(url_for('dashboard'))
+        db.session.commit()
+        flash('Report successfully updated')
+        return redirect(url_for('dashboard'))
+    
+    return render_template("edit_report.html", report=report)
 
 @app.route("/uploads/images/<filename>")
 def uploaded_file(filename):
@@ -160,6 +167,13 @@ def allowed_file(filename):
 def allowed_image_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def dashboard():
+    if request.method == "POST":
+        return redirect(url_for('upload'))
+
+    reports = Report.query.all()
+    return render_template("dashboard.html", reports=reports)
 
 if __name__ == "__main__":
     with app.app_context():
