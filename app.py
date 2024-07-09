@@ -6,20 +6,14 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 
-load_dotenv()  # Load environment variables from .env file
+load_dotenv()  # 從.env文件加載環境變量
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'supersecretkey')
 
-# Database configuration
-db_path = os.path.join(os.getenv('DATABASE_DIR', ''), 'reports.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+# 使用Heroku提供的DATABASE_URL環境變量
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("://", "ql://", 1)  # Heroku上的DATABASE_URL需要進行修改
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Set the upload folder paths
-app.config['UPLOAD_FOLDER'] = os.getenv('UPLOAD_FOLDER', 'uploads')
-app.config['IMAGE_UPLOAD_FOLDER'] = os.getenv('IMAGE_UPLOAD_FOLDER', 'uploads/images')
-app.config['MAX_CONTENT_PATH'] = 16 * 1024 * 1024  # Max file size: 16MB
 
 db = SQLAlchemy(app)
 
@@ -35,16 +29,16 @@ class Report(db.Model):
     share_regions = db.Column(db.String(100), nullable=False)
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Create the uploads directories if they don't exist
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-os.makedirs(app.config['IMAGE_UPLOAD_FOLDER'], exist_ok=True)
+# 創建uploads目錄（如果不存在）
+os.makedirs('uploads', exist_ok=True)
+os.makedirs('uploads/images', exist_ok=True)
 
-# User's login details
+# 用戶的登錄信息
 stored_email = "a123456"
 stored_password = "a123456"
 stored_region = "JP"
 
-# Function to authenticate user
+# 用於驗證用戶的函數
 def authenticate(email, password, region):
     if email == stored_email and password == stored_password and region == stored_region:
         return True
@@ -89,12 +83,12 @@ def upload():
         filename = None
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join('uploads', filename))
 
         image_filename = None
         if image_file and allowed_image_file(image_file.filename):
             image_filename = secure_filename(image_file.filename)
-            image_file.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], image_filename))
+            image_file.save(os.path.join('uploads/images', image_filename))
 
         report = Report(
             title=title,
@@ -116,7 +110,7 @@ def upload():
 @app.route("/download/<int:report_id>")
 def download(report_id):
     report = Report.query.get_or_404(report_id)
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], report.filename)
+    file_path = os.path.join('uploads', report.filename)
     if not os.path.exists(file_path):
         return f"Error: The file {report.filename} does not exist."
     return send_file(file_path, as_attachment=True)
@@ -138,12 +132,12 @@ def edit_report(report_id):
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join('uploads', filename))
             report.filename = filename
 
         if image_file and allowed_image_file(image_file.filename):
             image_filename = secure_filename(image_file.filename)
-            image_file.save(os.path.join(app.config['IMAGE_UPLOAD_FOLDER'], image_filename))
+            image_file.save(os.path.join('uploads/images', image_filename))
             report.image_filename = image_filename
 
         db.session.commit()
@@ -154,7 +148,7 @@ def edit_report(report_id):
 
 @app.route("/uploads/images/<filename>")
 def uploaded_file(filename):
-    return send_from_directory(app.config['IMAGE_UPLOAD_FOLDER'], filename)
+    return send_from_directory('uploads/images', filename)
 
 @app.route("/logout", methods=["POST"])
 def logout():
@@ -167,13 +161,6 @@ def allowed_file(filename):
 def allowed_image_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def dashboard():
-    if request.method == "POST":
-        return redirect(url_for('upload'))
-
-    reports = Report.query.all()
-    return render_template("dashboard.html", reports=reports)
 
 if __name__ == "__main__":
     with app.app_context():
