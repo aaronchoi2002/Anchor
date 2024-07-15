@@ -1,9 +1,10 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from datetime import datetime
 from werkzeug.utils import secure_filename
+from flask_migrate import Migrate
 from dotenv import load_dotenv
 import io
 
@@ -17,6 +18,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("://",
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 class Report(db.Model):
     id = db.Column(db.Integer, primary_key=True)
