@@ -1,10 +1,11 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
+import io
 
 load_dotenv()  # 從.env文件加載環境變量
 
@@ -25,13 +26,11 @@ class Report(db.Model):
     content = db.Column(db.Text, nullable=False)
     author = db.Column(db.String(100), nullable=False)
     filename = db.Column(db.String(100), nullable=False)
+    file_data = db.Column(db.LargeBinary, nullable=True)  # Store file binary data
     image_filename = db.Column(db.String(100), nullable=True)
+    image_data = db.Column(db.LargeBinary, nullable=True)  # Store image binary data
     share_regions = db.Column(db.String(100), nullable=False)
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
-
-# 創建uploads目錄（如果不存在）
-os.makedirs('uploads', exist_ok=True)
-os.makedirs('uploads/images', exist_ok=True)
 
 # 用戶的登錄信息
 stored_email = "a123456"
@@ -81,14 +80,16 @@ def upload():
         image_file = request.files["image"]
 
         filename = None
+        file_data = None
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join('uploads', filename))
+            file_data = file.read()  # Read file binary data
 
         image_filename = None
+        image_data = None
         if image_file and allowed_image_file(image_file.filename):
             image_filename = secure_filename(image_file.filename)
-            image_file.save(os.path.join('uploads/images', image_filename))
+            image_data = image_file.read()  # Read image binary data
 
         report = Report(
             title=title,
@@ -97,7 +98,9 @@ def upload():
             content=content,
             author=author,
             filename=filename,
+            file_data=file_data,
             image_filename=image_filename,
+            image_data=image_data,
             share_regions=",".join(share_regions)
         )
         db.session.add(report)
@@ -110,10 +113,11 @@ def upload():
 @app.route("/download/<int:report_id>")
 def download(report_id):
     report = Report.query.get_or_404(report_id)
-    file_path = os.path.join('uploads', report.filename)
-    if not os.path.exists(file_path):
-        return f"Error: The file {report.filename} does not exist."
-    return send_file(file_path, as_attachment=True)
+    return send_file(
+        io.BytesIO(report.file_data),
+        as_attachment=True,
+        download_name=report.filename
+    )
 
 @app.route("/edit_report/<int:report_id>", methods=["GET", "POST"])
 def edit_report(report_id):
@@ -131,14 +135,12 @@ def edit_report(report_id):
         image_file = request.files["image"]
 
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join('uploads', filename))
-            report.filename = filename
+            report.filename = secure_filename(file.filename)
+            report.file_data = file.read()  # Update file binary data
 
         if image_file and allowed_image_file(image_file.filename):
-            image_filename = secure_filename(image_file.filename)
-            image_file.save(os.path.join('uploads/images', image_filename))
-            report.image_filename = image_filename
+            report.image_filename = secure_filename(image_file.filename)
+            report.image_data = image_file.read()  # Update image binary data
 
         db.session.commit()
         flash('Report successfully updated')
@@ -148,7 +150,15 @@ def edit_report(report_id):
 
 @app.route("/uploads/images/<filename>")
 def uploaded_file(filename):
-    return send_from_directory('uploads/images', filename)
+    report = Report.query.filter_by(image_filename=filename).first()
+    if report and report.image_data:
+        return send_file(
+            io.BytesIO(report.image_data),
+            mimetype='image/jpeg',
+            as_attachment=False,
+            download_name=filename
+        )
+    return "File not found", 404
 
 @app.route("/logout", methods=["POST"])
 def logout():
