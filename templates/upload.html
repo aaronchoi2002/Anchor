@@ -8,18 +8,27 @@
 </head>
 <body>
 <div class="container mt-5">
-    <h1>Upload Report</h1>
+    <div class="d-flex justify-content-between mb-3">
+        <h1 id="title">Upload Report</h1>
+        <div>
+            <select id="language-select" class="form-control" style="display: inline; width: auto;">
+                <option value="en">English</option>
+                <option value="zh">中文</option>
+            </select>
+        </div>
+    </div>
+
     <form method="post" enctype="multipart/form-data">
         <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" class="form-control" id="title" name="title" required>
+            <label for="title-input" id="title-label">Title</label>
+            <input type="text" class="form-control" id="title-input" name="title" required>
         </div>
         <div class="form-group">
-            <label for="date">Date</label>
+            <label for="date" id="date-label">Date</label>
             <input type="text" class="form-control" id="date" name="date" required>
         </div>
         <div class="form-group">
-            <label for="category">Category</label>
+            <label for="category" id="category-label">Category</label>
             <select class="form-control" id="category" name="category" required>
                 <option value="貨幣">貨幣</option>
                 <option value="股價">股價</option>
@@ -30,15 +39,15 @@
             </select>
         </div>
         <div class="form-group">
-            <label for="content">Content</label>
+            <label for="content" id="content-label">Content</label>
             <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
         </div>
         <div class="form-group">
-            <label for="author">Author</label>
+            <label for="author" id="author-label">Author</label>
             <input type="text" class="form-control" id="author" name="author" required>
         </div>
         <div class="form-group">
-            <label for="share_regions">Share Regions</label>
+            <label for="share_regions" id="share-regions-label">Share Regions</label>
             <select multiple class="form-control" id="share_regions" name="share_regions" required>
                 <option value="JP">JP</option>
                 <option value="TW">TW</option>
@@ -48,18 +57,66 @@
             </select>
         </div>
         <div class="form-group">
-            <label for="file">Upload PDF</label>
+            <label for="file" id="file-label">Upload PDF</label>
             <input type="file" class="form-control-file" id="file" name="file">
         </div>
         <div class="form-group">
-            <label for="image">Upload Image</label>
+            <label for="image" id="image-label">Upload Image</label>
             <input type="file" class="form-control-file" id="image" name="image">
         </div>
-        <button type="submit" class="btn btn-primary">Upload Report</button>
+        <button type="submit" class="btn btn-primary" id="submit-button">Upload Report</button>
     </form>
 </div>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    const translations = {
+        en: {
+            title: "Upload Report",
+            titleLabel: "Title",
+            dateLabel: "Date",
+            categoryLabel: "Category",
+            contentLabel: "Content",
+            authorLabel: "Author",
+            shareRegionsLabel: "Share Regions",
+            fileLabel: "Upload PDF",
+            imageLabel: "Upload Image",
+            submitButton: "Upload Report"
+        },
+        zh: {
+            title: "上傳報告",
+            titleLabel: "標題",
+            dateLabel: "日期",
+            categoryLabel: "分類",
+            contentLabel: "內容",
+            authorLabel: "作者",
+            shareRegionsLabel: "分享地區",
+            fileLabel: "上傳 PDF",
+            imageLabel: "上傳圖片",
+            submitButton: "上傳報告"
+        }
+    };
+
+    function setLanguage(language) {
+        document.getElementById("title").textContent = translations[language].title;
+        document.getElementById("title-label").textContent = translations[language].titleLabel;
+        document.getElementById("date-label").textContent = translations[language].dateLabel;
+        document.getElementById("category-label").textContent = translations[language].categoryLabel;
+        document.getElementById("content-label").textContent = translations[language].contentLabel;
+        document.getElementById("author-label").textContent = translations[language].authorLabel;
+        document.getElementById("share-regions-label").textContent = translations[language].shareRegionsLabel;
+        document.getElementById("file-label").textContent = translations[language].fileLabel;
+        document.getElementById("image-label").textContent = translations[language].imageLabel;
+        document.getElementById("submit-button").textContent = translations[language].submitButton;
+    }
+
+    document.getElementById("language-select").addEventListener("change", function() {
+        setLanguage(this.value);
+    });
+
+    // Initialize with English
+    setLanguage("en");
+</script>
 </body>
 </html>
