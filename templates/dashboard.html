@@ -82,7 +82,7 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="category">Category</label>
-                                        <select class="form-control" name="category" required>
+                                        <select class="form-control category-select" name="category" required>
                                             <option value="currency">貨幣</option>
                                             <option value="stock">股價</option>
                                             <option value="realEstate">地產</option>
@@ -151,7 +151,7 @@
                     </div>
                     <div class="form-group">
                         <label for="category">Category</label>
-                        <select class="form-control" name="category" required>
+                        <select class="form-control category-select" name="category" required>
                             <option value="currency">貨幣</option>
                             <option value="stock">股價</option>
                             <option value="realEstate">地產</option>
@@ -251,7 +251,7 @@
         document.getElementById("author-label").textContent = translations[language].author;
         document.getElementById("share-regions-label").textContent = translations[language].shareRegions;
 
-        const categorySelects = document.querySelectorAll('select[name="category"]');
+        const categorySelects = document.querySelectorAll('.category-select');
         categorySelects.forEach(select => {
             select.options[0].textContent = translations[language].categories.currency;
             select.options[1].textContent = translations[language].categories.stock;
