@@ -83,12 +83,12 @@
                                     <div class="form-group">
                                         <label for="category">Category</label>
                                         <select class="form-control" name="category" required>
-                                            <option value="貨幣" {% if report.category == '貨幣' %}selected{% endif %}>貨幣</option>
-                                            <option value="股價" {% if report.category == '股價' %}selected{% endif %}>股價</option>
-                                            <option value="地產" {% if report.category == '地產' %}selected{% endif %}>地產</option>
-                                            <option value="零售" {% if report.category == '零售' %}selected{% endif %}>零售</option>
-                                            <option value="能源" {% if report.category == '能源' %}selected{% endif %}>能源</option>
-                                            <option value="食物" {% if report.category == '食物' %}selected{% endif %}>食物</option>
+                                            <option value="currency">貨幣</option>
+                                            <option value="stock">股價</option>
+                                            <option value="realEstate">地產</option>
+                                            <option value="retail">零售</option>
+                                            <option value="energy">能源</option>
+                                            <option value="food">食物</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
@@ -152,12 +152,12 @@
                     <div class="form-group">
                         <label for="category">Category</label>
                         <select class="form-control" name="category" required>
-                            <option value="貨幣">貨幣</option>
-                            <option value="股價">股價</option>
-                            <option value="地產">地產</option>
-                            <option value="零售">零售</option>
-                            <option value="能源">能源</option>
-                            <option value="食物">食物</option>
+                            <option value="currency">貨幣</option>
+                            <option value="stock">股價</option>
+                            <option value="realEstate">地產</option>
+                            <option value="retail">零售</option>
+                            <option value="energy">能源</option>
+                            <option value="food">食物</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -215,7 +215,15 @@
             category: "Category:",
             content: "Content:",
             author: "Author:",
-            shareRegions: "Share Regions:"
+            shareRegions: "Share Regions:",
+            categories: {
+                currency: "Currency",
+                stock: "Stock",
+                realEstate: "Real Estate",
+                retail: "Retail",
+                energy: "Energy",
+                food: "Food"
+            }
         },
         zh: {
             title: "報告儀表板",
@@ -223,7 +231,15 @@
             category: "報告分類:",
             content: "報告內容:",
             author: "作者:",
-            shareRegions: "分享地區:"
+            shareRegions: "分享地區:",
+            categories: {
+                currency: "貨幣",
+                stock: "股價",
+                realEstate: "地產",
+                retail: "零售",
+                energy: "能源",
+                food: "食物"
+            }
         }
     };
 
@@ -234,6 +250,16 @@
         document.getElementById("content-label").textContent = translations[language].content;
         document.getElementById("author-label").textContent = translations[language].author;
         document.getElementById("share-regions-label").textContent = translations[language].shareRegions;
+
+        const categorySelects = document.querySelectorAll('select[name="category"]');
+        categorySelects.forEach(select => {
+            select.options[0].textContent = translations[language].categories.currency;
+            select.options[1].textContent = translations[language].categories.stock;
+            select.options[2].textContent = translations[language].categories.realEstate;
+            select.options[3].textContent = translations[language].categories.retail;
+            select.options[4].textContent = translations[language].categories.energy;
+            select.options[5].textContent = translations[language].categories.food;
+        });
     }
 
     document.getElementById("language-select").addEventListener("change", function() {
