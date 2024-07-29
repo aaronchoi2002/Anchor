@@ -25,17 +25,17 @@
         </div>
         <div class="form-group">
             <label for="date" id="date-label">Date</label>
-            <input type="text" class="form-control" id="date" name="date" required>
+            <input type="date" class="form-control" id="date" name="date" required>
         </div>
         <div class="form-group">
             <label for="category" id="category-label">Category</label>
-            <select class="form-control" id="category" name="category" required>
-                <option value="貨幣">貨幣</option>
-                <option value="股價">股價</option>
-                <option value="地產">地產</option>
-                <option value="零售">零售</option>
-                <option value="能源">能源</option>
-                <option value="食物">食物</option>
+            <select class="form-control category-select" id="category" name="category" required>
+                <option value="currency">貨幣</option>
+                <option value="stock">股價</option>
+                <option value="realEstate">地產</option>
+                <option value="retail">零售</option>
+                <option value="energy">能源</option>
+                <option value="food">食物</option>
             </select>
         </div>
         <div class="form-group">
@@ -67,7 +67,7 @@
         <button type="submit" class="btn btn-primary" id="submit-button">Upload Report</button>
     </form>
 </div>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
@@ -82,7 +82,15 @@
             shareRegionsLabel: "Share Regions",
             fileLabel: "Upload PDF",
             imageLabel: "Upload Image",
-            submitButton: "Upload Report"
+            submitButton: "Upload Report",
+            categories: {
+                currency: "Currency",
+                stock: "Stock",
+                realEstate: "Real Estate",
+                retail: "Retail",
+                energy: "Energy",
+                food: "Food"
+            }
         },
         zh: {
             title: "上傳報告",
@@ -94,7 +102,15 @@
             shareRegionsLabel: "分享地區",
             fileLabel: "上傳 PDF",
             imageLabel: "上傳圖片",
-            submitButton: "上傳報告"
+            submitButton: "上傳報告",
+            categories: {
+                currency: "貨幣",
+                stock: "股價",
+                realEstate: "地產",
+                retail: "零售",
+                energy: "能源",
+                food: "食物"
+            }
         }
     };
 
@@ -109,14 +125,25 @@
         document.getElementById("file-label").textContent = translations[language].fileLabel;
         document.getElementById("image-label").textContent = translations[language].imageLabel;
         document.getElementById("submit-button").textContent = translations[language].submitButton;
+
+        const categorySelect = document.getElementById('category');
+        categorySelect.options[0].textContent = translations[language].categories.currency;
+        categorySelect.options[1].textContent = translations[language].categories.stock;
+        categorySelect.options[2].textContent = translations[language].categories.realEstate;
+        categorySelect.options[3].textContent = translations[language].categories.retail;
+        categorySelect.options[4].textContent = translations[language].categories.energy;
+        categorySelect.options[5].textContent = translations[language].categories.food;
     }
 
     document.getElementById("language-select").addEventListener("change", function() {
         setLanguage(this.value);
+        localStorage.setItem('language', this.value); // Save the selected language
     });
 
-    // Initialize with English
-    setLanguage("en");
+    // Initialize with the saved language or default to English
+    const savedLanguage = localStorage.getItem('language') || 'en';
+    document.getElementById("language-select").value = savedLanguage;
+    setLanguage(savedLanguage);
 </script>
 </body>
 </html>
