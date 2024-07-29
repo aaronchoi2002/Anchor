@@ -9,15 +9,11 @@
 <body>
 <div class="container mt-5">
     <div class="d-flex justify-content-between mb-3">
-        <h1 id="title">Report Dashboard</h1>
+        <h1>Report Dashboard</h1>
         <div>
-            <select id="language-select" class="form-control" style="display: inline; width: auto;">
-                <option value="en">English</option>
-                <option value="zh">中文</option>
-            </select>
-            <button class="btn btn-primary" data-toggle="modal" data-target="#uploadModal" id="upload-button">Upload New Report</button>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#uploadModal">Upload New Report</button>
             <form action="{{ url_for('logout') }}" method="post" style="display: inline;">
-                <button type="submit" class="btn btn-danger" id="logout-button">Logout</button>
+                <button type="submit" class="btn btn-danger">Logout</button>
             </form>
         </div>
     </div>
@@ -25,12 +21,12 @@
     <div class="row mb-3">
         <div class="col-md-2">
             <div class="list-group">
-                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('ALL')" id="all-button">All</button>
-                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('JP')" id="jp-button">JP</button>
-                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('TW')" id="tw-button">TW</button>
-                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('SG')" id="sg-button">SG</button>
-                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('HK')" id="hk-button">HK</button>
-                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('UK')" id="uk-button">UK</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('ALL')">All</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('JP')">JP</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('TW')">TW</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('SG')">SG</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('HK')">HK</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('UK')">UK</button>
             </div>
         </div>
         <div class="col-md-10">
@@ -48,13 +44,13 @@
                         <div class="col-md-8">
                             <div class="card-body">
                                 <h5 class="card-title">{{ report.title }}</h5>
-                                <p class="card-text"><strong id="date-label">Date:</strong> {{ report.date }}</p>
-                                <p class="card-text"><strong id="category-label">Category:</strong> {{ report.category }}</p>
-                                <p class="card-text"><strong id="content-label">Content:</strong> {{ report.content }}</p>
-                                <p class="card-text"><strong id="author-label">Author:</strong> {{ report.author }}</p>
-                                <p class="card-text"><strong id="share-regions-label">Share Regions:</strong> {{ report.share_regions }}</p>
-                                <a href="{{ url_for('download', report_id=report.id) }}" class="btn btn-success" id="download-button">Download PDF</a>
-                                <button class="btn btn-primary" data-toggle="modal" data-target="#editModal{{ report.id }}" id="edit-button">Edit</button>
+                                <p class="card-text"><strong>Date:</strong> {{ report.date }}</p>
+                                <p class="card-text"><strong>Category:</strong> {{ report.category }}</p>
+                                <p class="card-text"><strong>Content:</strong> {{ report.content }}</p>
+                                <p class="card-text"><strong>Author:</strong> {{ report.author }}</p>
+                                <p class="card-text"><strong>Share Regions:</strong> {{ report.share_regions }}</p>
+                                <a href="{{ url_for('download', report_id=report.id) }}" class="btn btn-success">Download PDF</a>
+                                <button class="btn btn-primary" data-toggle="modal" data-target="#editModal{{ report.id }}">Edit</button>
                             </div>
                         </div>
                     </div>
@@ -117,7 +113,7 @@
                                         <label for="image">Upload Image</label>
                                         <input type="file" class="form-control-file" name="image">
                                     </div>
-                                    <button type="submit" class="btn btn-primary" id="save-button">Save changes</button>
+                                    <button type="submit" class="btn btn-primary">Save changes</button>
                                 </form>
                             </div>
                         </div>
@@ -186,7 +182,7 @@
                         <label for="image">Upload Image</label>
                         <input type="file" class="form-control-file" name="image">
                     </div>
-                    <button type="submit" class="btn btn-primary" id="upload-button">Upload</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
                 </form>
             </div>
         </div>
@@ -207,95 +203,6 @@
             }
         });
     }
-
-    const translations = {
-        en: {
-            title: "Report Dashboard",
-            uploadButton: "Upload New Report",
-            logoutButton: "Logout",
-            allButton: "All",
-            jpButton: "JP",
-            twButton: "TW",
-            sgButton: "SG",
-            hkButton: "HK",
-            ukButton: "UK",
-            dateLabel: "Date:",
-            categoryLabel: "Category:",
-            contentLabel: "Content:",
-            authorLabel: "Author:",
-            shareRegionsLabel: "Share Regions:",
-            downloadButton: "Download PDF",
-            editButton: "Edit",
-            saveButton: "Save changes",
-            categoryOptions: [
-                { value: "Currency", text: "Currency" },
-                { value: "Stock Price", text: "Stock Price" },
-                { value: "Real Estate", text: "Real Estate" },
-                { value: "Retail", text: "Retail" },
-                { value: "Energy", text: "Energy" },
-                { value: "Food", text: "Food" }
-            ]
-        },
-        zh: {
-            title: "報告儀表板",
-            uploadButton: "上傳新報告",
-            logoutButton: "登出",
-            allButton: "全部",
-            jpButton: "日本",
-            twButton: "台灣",
-            sgButton: "新加坡",
-            hkButton: "香港",
-            ukButton: "英國",
-            dateLabel: "日期:",
-            categoryLabel: "分類:",
-            contentLabel: "內容:",
-            authorLabel: "作者:",
-            shareRegionsLabel: "分享地區:",
-            downloadButton: "下載 PDF",
-            editButton: "編輯",
-            saveButton: "保存更改",
-            categoryOptions: [
-                { value: "Currency", text: "貨幣" },
-                { value: "Stock Price", text: "股價" },
-                { value: "Real Estate", text: "地產" },
-                { value: "Retail", text: "零售" },
-                { value: "Energy", text: "能源" },
-                { value: "Food", text: "食物" }
-            ]
-        }
-    };
-
-    function setLanguage(language) {
-        document.getElementById("title").textContent = translations[language].title;
-        document.getElementById("upload-button").textContent = translations[language].uploadButton;
-        document.getElementById("logout-button").textContent = translations[language].logoutButton;
-        document.getElementById("all-button").textContent = translations[language].allButton;
-        document.getElementById("jp-button").textContent = translations[language].jpButton;
-        document.getElementById("tw-button").textContent = translations[language].twButton;
-        document.getElementById("sg-button").textContent = translations[language].sgButton;
-        document.getElementById("hk-button").textContent = translations[language].hkButton;
-        document.getElementById("uk-button").textContent = translations[language].ukButton;
-        document.getElementById("date-label").textContent = translations[language].dateLabel;
-        document.getElementById("category-label").textContent = translations[language].categoryLabel;
-        document.getElementById("content-label").textContent = translations[language].contentLabel;
-        document.getElementById("author-label").textContent = translations[language].authorLabel;
-        document.getElementById("share-regions-label").textContent = translations[language].shareRegionsLabel;
-        document.getElementById("download-button").textContent = translations[language].downloadButton;
-        document.getElementById("edit-button").textContent = translations[language].editButton;
-        document.getElementById("save-button").textContent = translations[language].saveButton;
-
-        const categorySelects = document.querySelectorAll('select[name="category"]');
-        categorySelects.forEach(select => {
-            select.innerHTML = translations[language].categoryOptions.map(option => `<option value="${option.value}">${option.text}</option>`).join('');
-        });
-    }
-
-    document.getElementById("language-select").addEventListener("change", function() {
-        setLanguage(this.value);
-    });
-
-    // Initialize with English
-    setLanguage("en");
 </script>
 </body>
 </html>
