@@ -9,12 +9,8 @@
 <body>
 <div class="container mt-5">
     <div class="d-flex justify-content-between mb-3">
-        <h1 id="title">Report Dashboard</h1>
+        <h1>Report Dashboard</h1>
         <div>
-            <select id="language-select" class="form-control" style="display: inline; width: auto;">
-                <option value="en">English</option>
-                <option value="zh">中文</option>
-            </select>
             <button class="btn btn-primary" data-toggle="modal" data-target="#uploadModal">Upload New Report</button>
             <form action="{{ url_for('logout') }}" method="post" style="display: inline;">
                 <button type="submit" class="btn btn-danger">Logout</button>
@@ -28,7 +24,8 @@
                 <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('ALL')">All</button>
                 <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('JP')">JP</button>
                 <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('TW')">TW</button>
-                 <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('HK')">HK</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('SG')">SG</button>
+                <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('HK')">HK</button>
                 <button type="button" class="list-group-item list-group-item-action" onclick="filterReports('UK')">UK</button>
             </div>
         </div>
@@ -47,11 +44,11 @@
                         <div class="col-md-8">
                             <div class="card-body">
                                 <h5 class="card-title">{{ report.title }}</h5>
-                                <p class="card-text"><strong id="date-label-{{ report.id }}">Date:</strong> {{ report.date }}</p>
-                                <p class="card-text"><strong id="category-label-{{ report.id }}">Category:</strong> <span id="category-{{ report.id }}">{{ report.category }}</span></p>
-                                <p class="card-text"><strong id="content-label-{{ report.id }}">Content:</strong> {{ report.content }}</p>
-                                <p class="card-text"><strong id="author-label-{{ report.id }}">Author:</strong> {{ report.author }}</p>
-                                <p class="card-text"><strong id="share-regions-label-{{ report.id }}">Share Regions:</strong> {{ report.share_regions }}</p>
+                                <p class="card-text"><strong>Date:</strong> {{ report.date }}</p>
+                                <p class="card-text"><strong>Category:</strong> {{ report.category }}</p>
+                                <p class="card-text"><strong>Content:</strong> {{ report.content }}</p>
+                                <p class="card-text"><strong>Author:</strong> {{ report.author }}</p>
+                                <p class="card-text"><strong>Share Regions:</strong> {{ report.share_regions }}</p>
                                 <a href="{{ url_for('download', report_id=report.id) }}" class="btn btn-success">Download PDF</a>
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#editModal{{ report.id }}">Edit</button>
                             </div>
@@ -82,12 +79,12 @@
                                     <div class="form-group">
                                         <label for="category">Category</label>
                                         <select class="form-control" name="category" required>
-                                            <option value="貨幣" {% if report.category == '貨幣' %}selected{% endif %}>貨幣</option>
-                                            <option value="股價" {% if report.category == '股價' %}selected{% endif %}>股價</option>
-                                            <option value="地產" {% if report.category == '地產' %}selected{% endif %}>地產</option>
-                                            <option value="零售" {% if report.category == '零售' %}selected{% endif %}>零售</option>
-                                            <option value="能源" {% if report.category == '能源' %}selected{% endif %}>能源</option>
-                                            <option value="食物" {% if report.category == '食物' %}selected{% endif %}>食物</option>
+                                            <option value="Currency" {% if report.category == 'Currency' %}selected{% endif %}>Currency</option>
+                                            <option value="Stock Price" {% if report.category == 'Stock Price' %}selected{% endif %}>Stock Price</option>
+                                            <option value="Real Estate" {% if report.category == 'Real Estate' %}selected{% endif %}>Real Estate</option>
+                                            <option value="Retail" {% if report.category == 'Retail' %}selected{% endif %}>Retail</option>
+                                            <option value="Energy" {% if report.category == 'Energy' %}selected{% endif %}>Energy</option>
+                                            <option value="Food" {% if report.category == 'Food' %}selected{% endif %}>Food</option>
                                         </select>
                                     </div>
                                     <div class="form-group">
@@ -151,12 +148,12 @@
                     <div class="form-group">
                         <label for="category">Category</label>
                         <select class="form-control" name="category" required>
-                            <option value="貨幣">貨幣</option>
-                            <option value="股價">股價</option>
-                            <option value="地產">地產</option>
-                            <option value="零售">零售</option>
-                            <option value="能源">能源</option>
-                            <option value="食物">食物</option>
+                            <option value="Currency">Currency</option>
+                            <option value="Stock Price">Stock Price</option>
+                            <option value="Real Estate">Real Estate</option>
+                            <option value="Retail">Retail</option>
+                            <option value="Energy">Energy</option>
+                            <option value="Food">Food</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -206,76 +203,6 @@
             }
         });
     }
-
-    const translations = {
-        en: {
-            title: "Report Dashboard",
-            date: "Date:",
-            category: "Category:",
-            content: "Content:",
-            author: "Author:",
-            shareRegions: "Share Regions:",
-            categories: {
-                "貨幣": "Currency",
-                "股價": "Stock Price",
-                "地產": "Real Estate",
-                "零售": "Retail",
-                "能源": "Energy",
-                "食物": "Food"
-            }
-        },
-        zh: {
-            title: "報告儀表板",
-            date: "日期:",
-            category: "報告分類:",
-            content: "報告內容:",
-            author: "作者:",
-            shareRegions: "分享地區:",
-            categories: {
-                "Currency": "貨幣",
-                "Stock Price": "股價",
-                "Real Estate": "地產",
-                "Retail": "零售",
-                "Energy": "能源",
-                "Food": "食物"
-            }
-        }
-    };
-
-    function setLanguage(language) {
-        document.getElementById("title").textContent = translations[language].title;
-
-        document.querySelectorAll('[id^="date-label"]').forEach(el => {
-            el.textContent = translations[language].date;
-        });
-
-        document.querySelectorAll('[id^="category-label"]').forEach(el => {
-            el.textContent = translations[language].category;
-        });
-
-        document.querySelectorAll('[id^="content-label"]').forEach(el => {
-            el.textContent = translations[language].content;
-        });
-
-        document.querySelectorAll('[id^="author-label"]').forEach(el => {
-            el.textContent = translations[language].author;
-        });
-
-        document.querySelectorAll('[id^="share-regions-label"]').forEach(el => {
-            el.textContent = translations[language].shareRegions;
-        });
-
-        document.querySelectorAll('[id^="category-"]').forEach(el => {
-            el.textContent = translations[language].categories[el.textContent] || el.textContent;
-        });
-    }
-
-    document.getElementById("language-select").addEventListener("change", function() {
-        setLanguage(this.value);
-    });
-
-    // Initialize with English
-    setLanguage("en");
 </script>
 </body>
 </html>
