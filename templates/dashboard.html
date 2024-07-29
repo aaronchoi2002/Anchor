@@ -9,8 +9,12 @@
 <body>
 <div class="container mt-5">
     <div class="d-flex justify-content-between mb-3">
-        <h1>Report Dashboard</h1>
+        <h1 id="title">Report Dashboard</h1>
         <div>
+            <select id="language-select" class="form-control" style="display: inline; width: auto;">
+                <option value="en">English</option>
+                <option value="zh">中文</option>
+            </select>
             <button class="btn btn-primary" data-toggle="modal" data-target="#uploadModal">Upload New Report</button>
             <form action="{{ url_for('logout') }}" method="post" style="display: inline;">
                 <button type="submit" class="btn btn-danger">Logout</button>
@@ -44,11 +48,11 @@
                         <div class="col-md-8">
                             <div class="card-body">
                                 <h5 class="card-title">{{ report.title }}</h5>
-                                <p class="card-text"><strong>日期:</strong> {{ report.date }}</p>
-                                <p class="card-text"><strong>報告分類:</strong> {{ report.category }}</p>
-                                <p class="card-text"><strong>報告內容:</strong> {{ report.content }}</p>
-                                <p class="card-text"><strong>作者:</strong> {{ report.author }}</p>
-                                <p class="card-text"><strong>分享地區:</strong> {{ report.share_regions }}</p>
+                                <p class="card-text"><strong id="date-label">Date:</strong> {{ report.date }}</p>
+                                <p class="card-text"><strong id="category-label">Category:</strong> {{ report.category }}</p>
+                                <p class="card-text"><strong id="content-label">Content:</strong> {{ report.content }}</p>
+                                <p class="card-text"><strong id="author-label">Author:</strong> {{ report.author }}</p>
+                                <p class="card-text"><strong id="share-regions-label">Share Regions:</strong> {{ report.share_regions }}</p>
                                 <a href="{{ url_for('download', report_id=report.id) }}" class="btn btn-success">Download PDF</a>
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#editModal{{ report.id }}">Edit</button>
                             </div>
@@ -203,6 +207,41 @@
             }
         });
     }
+
+    const translations = {
+        en: {
+            title: "Report Dashboard",
+            date: "Date:",
+            category: "Category:",
+            content: "Content:",
+            author: "Author:",
+            shareRegions: "Share Regions:"
+        },
+        zh: {
+            title: "報告儀表板",
+            date: "日期:",
+            category: "報告分類:",
+            content: "報告內容:",
+            author: "作者:",
+            shareRegions: "分享地區:"
+        }
+    };
+
+    function setLanguage(language) {
+        document.getElementById("title").textContent = translations[language].title;
+        document.getElementById("date-label").textContent = translations[language].date;
+        document.getElementById("category-label").textContent = translations[language].category;
+        document.getElementById("content-label").textContent = translations[language].content;
+        document.getElementById("author-label").textContent = translations[language].author;
+        document.getElementById("share-regions-label").textContent = translations[language].shareRegions;
+    }
+
+    document.getElementById("language-select").addEventListener("change", function() {
+        setLanguage(this.value);
+    });
+
+    // Initialize with English
+    setLanguage("en");
 </script>
 </body>
 </html>
