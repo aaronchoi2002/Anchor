@@ -53,8 +53,8 @@
                                 <p class="card-text"><strong id="content-label">Content:</strong> {{ report.content }}</p>
                                 <p class="card-text"><strong id="author-label">Author:</strong> {{ report.author }}</p>
                                 <p class="card-text"><strong id="share-regions-label">Share Regions:</strong> {{ report.share_regions }}</p>
-                                <a href="{{ url_for('download', report_id=report.id) }}" class="btn btn-success">Download PDF</a>
-                                <button class="btn btn-primary" data-toggle="modal" data-target="#editModal{{ report.id }}">Edit</button>
+                                <a href="{{ url_for('download', report_id=report.id) }}" class="btn btn-success" id="download-button">Download PDF</a>
+                                <button class="btn btn-primary" data-toggle="modal" data-target="#editModal{{ report.id }}" id="edit-button">Edit</button>
                             </div>
                         </div>
                     </div>
@@ -73,15 +73,15 @@
                             <div class="modal-body">
                                 <form action="{{ url_for('edit_report', report_id=report.id) }}" method="post" enctype="multipart/form-data">
                                     <div class="form-group">
-                                        <label for="title">Title</label>
+                                        <label id="edit-title-label" for="title">Title</label>
                                         <input type="text" class="form-control" name="title" value="{{ report.title }}" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="date">Date</label>
+                                        <label id="edit-date-label" for="date">Date</label>
                                         <input type="date" class="form-control" name="date" value="{{ report.date }}" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="category">Category</label>
+                                        <label id="edit-category-label" for="category">Category</label>
                                         <select class="form-control category-select" name="category" required>
                                             <option value="currency">貨幣</option>
                                             <option value="stock">股價</option>
@@ -92,15 +92,15 @@
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label for="content">Content</label>
+                                        <label id="edit-content-label" for="content">Content</label>
                                         <textarea class="form-control" name="content" rows="3" required>{{ report.content }}</textarea>
                                     </div>
                                     <div class="form-group">
-                                        <label for="author">Author</label>
+                                        <label id="edit-author-label" for="author">Author</label>
                                         <input type="text" class="form-control" name="author" value="{{ report.author }}" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="share_regions">Share Regions</label>
+                                        <label id="edit-share-regions-label" for="share_regions">Share Regions</label>
                                         <select multiple class="form-control" name="share_regions">
                                             <option value="JP" {% if 'JP' in report.share_regions %}selected{% endif %}>JP</option>
                                             <option value="TW" {% if 'TW' in report.share_regions %}selected{% endif %}>TW</option>
@@ -110,14 +110,14 @@
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label for="file">Upload PDF</label>
+                                        <label id="edit-file-label" for="file">Upload PDF</label>
                                         <input type="file" class="form-control-file" name="file">
                                     </div>
                                     <div class="form-group">
-                                        <label for="image">Upload Image</label>
+                                        <label id="edit-image-label" for="image">Upload Image</label>
                                         <input type="file" class="form-control-file" name="image">
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                    <button type="submit" class="btn btn-primary" id="save-changes-button">Save changes</button>
                                 </form>
                             </div>
                         </div>
@@ -142,15 +142,15 @@
             <div class="modal-body">
                 <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
                     <div class="form-group">
-                        <label for="title">Title</label>
+                        <label id="upload-title-label" for="title">Title</label>
                         <input type="text" class="form-control" name="title" required>
                     </div>
                     <div class="form-group">
-                        <label for="date">Date</label>
+                        <label id="upload-date-label" for="date">Date</label>
                         <input type="date" class="form-control" name="date" required>
                     </div>
                     <div class="form-group">
-                        <label for="category">Category</label>
+                        <label id="upload-category-label" for="category">Category</label>
                         <select class="form-control category-select" name="category" required>
                             <option value="currency">貨幣</option>
                             <option value="stock">股價</option>
@@ -161,15 +161,15 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="content">Content</label>
+                        <label id="upload-content-label" for="content">Content</label>
                         <textarea class="form-control" name="content" rows="3" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="author">Author</label>
+                        <label id="upload-author-label" for="author">Author</label>
                         <input type="text" class="form-control" name="author" required>
                     </div>
                     <div class="form-group">
-                        <label for="share_regions">Share Regions</label>
+                        <label id="upload-share-regions-label" for="share_regions">Share Regions</label>
                         <select multiple class="form-control" name="share_regions">
                             <option value="JP">JP</option>
                             <option value="TW">TW</option>
@@ -179,14 +179,14 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="file">Upload PDF</label>
+                        <label id="upload-file-label" for="file">Upload PDF</label>
                         <input type="file" class="form-control-file" name="file">
                     </div>
                     <div class="form-group">
-                        <label for="image">Upload Image</label>
+                        <label id="upload-image-label" for="image">Upload Image</label>
                         <input type="file" class="form-control-file" name="image">
                     </div>
-                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <button type="submit" class="btn btn-primary" id="upload-button">Upload</button>
                 </form>
             </div>
         </div>
@@ -223,7 +223,14 @@
                 retail: "Retail",
                 energy: "Energy",
                 food: "Food"
-            }
+            },
+            edit: "Edit",
+            download: "Download PDF",
+            saveChanges: "Save changes",
+            uploadNewReport: "Upload New Report",
+            upload: "Upload",
+            uploadPDF: "Upload PDF",
+            uploadImage: "Upload Image"
         },
         zh: {
             title: "報告儀表板",
@@ -239,7 +246,14 @@
                 retail: "零售",
                 energy: "能源",
                 food: "食物"
-            }
+            },
+            edit: "編輯",
+            download: "下載 PDF",
+            saveChanges: "保存更改",
+            uploadNewReport: "上傳新報告",
+            upload: "上傳",
+            uploadPDF: "上傳 PDF",
+            uploadImage: "上傳圖像"
         }
     };
 
@@ -259,6 +273,58 @@
             select.options[3].textContent = translations[language].categories.retail;
             select.options[4].textContent = translations[language].categories.energy;
             select.options[5].textContent = translations[language].categories.food;
+        });
+
+        // Update modal labels and buttons
+        document.querySelectorAll('.modal-title').forEach(element => {
+            element.textContent = translations[language].edit;
+        });
+        document.querySelectorAll('#edit-title-label').forEach(element => {
+            element.textContent = translations[language].title;
+        });
+        document.querySelectorAll('#edit-date-label').forEach(element => {
+            element.textContent = translations[language].date;
+        });
+        document.querySelectorAll('#edit-category-label').forEach(element => {
+            element.textContent = translations[language].category;
+        });
+        document.querySelectorAll('#edit-content-label').forEach(element => {
+            element.textContent = translations[language].content;
+        });
+        document.querySelectorAll('#edit-author-label').forEach(element => {
+            element.textContent = translations[language].author;
+        });
+        document.querySelectorAll('#edit-share-regions-label').forEach(element => {
+            element.textContent = translations[language].shareRegions;
+        });
+        document.querySelectorAll('#edit-file-label').forEach(element => {
+            element.textContent = translations[language].uploadPDF;
+        });
+        document.querySelectorAll('#edit-image-label').forEach(element => {
+            element.textContent = translations[language].uploadImage;
+        });
+        document.querySelectorAll('#save-changes-button').forEach(element => {
+            element.textContent = translations[language].saveChanges;
+        });
+
+        // Upload modal
+        document.getElementById('uploadModalLabel').textContent = translations[language].uploadNewReport;
+        document.getElementById('upload-title-label').textContent = translations[language].title;
+        document.getElementById('upload-date-label').textContent = translations[language].date;
+        document.getElementById('upload-category-label').textContent = translations[language].category;
+        document.getElementById('upload-content-label').textContent = translations[language].content;
+        document.getElementById('upload-author-label').textContent = translations[language].author;
+        document.getElementById('upload-share-regions-label').textContent = translations[language].shareRegions;
+        document.getElementById('upload-file-label').textContent = translations[language].uploadPDF;
+        document.getElementById('upload-image-label').textContent = translations[language].uploadImage;
+        document.getElementById('upload-button').textContent = translations[language].upload;
+
+        // Update edit and download buttons in the report list
+        document.querySelectorAll('#edit-button').forEach(button => {
+            button.textContent = translations[language].edit;
+        });
+        document.querySelectorAll('#download-button').forEach(button => {
+            button.textContent = translations[language].download;
         });
     }
 
