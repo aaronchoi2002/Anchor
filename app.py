@@ -65,9 +65,9 @@ def dashboard():
     page = request.args.get('page', 1, type=int)
     region = request.args.get("region")
     if region:
-        reports = Report.query.filter(Report.share_regions.contains(region)).paginate(page=page, per_page=5, error_out=False)
+        reports = Report.query.filter(Report.share_regions.contains(region)).order_by(Report.upload_date.desc()).paginate(page=page, per_page=5, error_out=False)
     else:
-        reports = Report.query.paginate(page=page, per_page=5, error_out=False)
+        reports = Report.query.order_by(Report.upload_date.desc()).paginate(page=page, per_page=5, error_out=False)
     return render_template("dashboard.html", reports=reports)
 
 @app.route("/upload", methods=["GET", "POST"])
