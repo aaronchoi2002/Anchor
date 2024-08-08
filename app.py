@@ -62,11 +62,12 @@ def login():
 
 @app.route("/dashboard", methods=["GET", "POST"])
 def dashboard():
+    page = request.args.get('page', 1, type=int)
     region = request.args.get("region")
     if region:
-        reports = Report.query.filter(Report.share_regions.contains(region)).all()
+        reports = Report.query.filter(Report.share_regions.contains(region)).paginate(page, 5, False)
     else:
-        reports = Report.query.all()
+        reports = Report.query.paginate(page, 5, False)
     return render_template("dashboard.html", reports=reports)
 
 @app.route("/upload", methods=["GET", "POST"])
@@ -86,12 +87,18 @@ def upload():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file_data = file.read()  # Read file binary data
+        else:
+            flash('Invalid file type. Only PDF files are allowed.')
+            return redirect(url_for('upload'))
 
         image_filename = None
         image_data = None
         if image_file and allowed_image_file(image_file.filename):
             image_filename = secure_filename(image_file.filename)
             image_data = image_file.read()  # Read image binary data
+        elif image_file:
+            flash('Invalid image type. Only PNG, JPG, and JPEG files are allowed.')
+            return redirect(url_for('upload'))
 
         report = Report(
             title=title,
@@ -139,10 +146,16 @@ def edit_report(report_id):
         if file and allowed_file(file.filename):
             report.filename = secure_filename(file.filename)
             report.file_data = file.read()  # Update file binary data
+        elif file:
+            flash('Invalid file type. Only PDF files are allowed.')
+            return redirect(url_for('edit_report', report_id=report_id))
 
         if image_file and allowed_image_file(image_file.filename):
             report.image_filename = secure_filename(image_file.filename)
             report.image_data = image_file.read()  # Update image binary data
+        elif image_file:
+            flash('Invalid image type. Only PNG, JPG, and JPEG files are allowed.')
+            return redirect(url_for('edit_report', report_id=report_id))
 
         db.session.commit()
         flash('Report successfully updated')
