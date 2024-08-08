@@ -22,7 +22,7 @@
             <label for="category">Category</label>
             <select class="form-control" id="category" name="category" required>
                 <option value="Currency" {% if report.category == 'Currency' %}selected{% endif %}>Currency</option>
-                <option value="Stock Price" {% if report.category == 'Stock Price' %}selected{% endif %}>Stock Price</option>
+                <option value="Stock" {% if report.category == 'Stock' %}selected{% endif %}>Stock</option>
                 <option value="Real Estate" {% if report.category == 'Real Estate' %}selected{% endif %}>Real Estate</option>
                 <option value="Retail" {% if report.category == 'Retail' %}selected{% endif %}>Retail</option>
                 <option value="Energy" {% if report.category == 'Energy' %}selected{% endif %}>Energy</option>
