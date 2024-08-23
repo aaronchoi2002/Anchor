@@ -8,9 +8,6 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 import io
 import pandas as pd
-from flask_migrate import Migrate
-
-migrate = Migrate(app, db)
 
 load_dotenv()  # 從.env文件加載環境變量
 
