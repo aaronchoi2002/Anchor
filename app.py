@@ -222,7 +222,7 @@ def allowed_image_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def allowed_excel_file(filename):
-    ALLOWED_EXTENSIONS = {'xlsx'}
+    ALLOWED_EXTENSIONS = {'xlsx, csv, xls'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 if __name__ == "__main__":
