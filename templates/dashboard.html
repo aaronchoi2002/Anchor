@@ -118,7 +118,9 @@
                                 <p class="card-text"><strong>Author:</strong> {{ report.author }}</p>
                                 <p class="card-text"><strong>Share Regions:</strong> {{ report.share_regions }}</p>
                                 <a href="{{ url_for('download', report_id=report.id) }}" class="btn btn-success">Download PDF</a>
-                                <a href="{{ url_for('download_excel', report_id=report.id) }}" class="btn btn-info">Download Excel</a> <!-- New Download Excel Button for each report -->
+                                {% if report.excel_filename %}
+                                <a href="{{ url_for('download_excel', report_id=report.id) }}" class="btn btn-primary">Download Excel</a>
+                                {% endif %}
                                 <button class="btn btn-primary" data-toggle="modal" data-target="#editModal{{ report.id }}">Edit</button>
                             </div>
                         </div>
