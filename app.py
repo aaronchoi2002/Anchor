@@ -71,34 +71,35 @@ def dashboard():
         reports = Report.query.order_by(Report.upload_date.desc()).paginate(page=page, per_page=5, error_out=False)
     return render_template("dashboard.html", reports=reports)
 
-@app.route("/download_excel")
-def download_excel():
-    # Query all reports from the database
-    reports = Report.query.all()
-
-    # Convert the reports data into a pandas DataFrame
-    data = [{
-        "Title": report.title,
-        "Date": report.date,
-        "Category": report.category,
-        "Content": report.content,
-        "Author": report.author,
-        "Share Regions": report.share_regions,
-        "Upload Date": report.upload_date
-    } for report in reports]
-
+@app.route("/download_excel/<int:report_id>")
+def download_excel(report_id):
+    report = Report.query.get_or_404(report_id)
+    
+    # Prepare a pandas DataFrame with the report data
+    data = {
+        "Title": [report.title],
+        "Date": [report.date],
+        "Category": [report.category],
+        "Content": [report.content],
+        "Author": [report.author],
+        "Share Regions": [report.share_regions]
+    }
     df = pd.DataFrame(data)
 
-    # Save the DataFrame to an Excel file in memory
+    # Create an in-memory buffer to store the Excel file
     output = io.BytesIO()
-    writer = pd.ExcelWriter(output, engine='openpyxl')
-    df.to_excel(writer, index=False, sheet_name='Reports')
-    writer.save()
+
+    # Use a context manager to handle the Excel writer
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Report')
+        writer.close()
+    
+    # Seek to the beginning of the stream to ensure all data is written
     output.seek(0)
-
-    # Send the Excel file to the client
-    return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', download_name='reports.xlsx', as_attachment=True)
-
+    
+    # Return the file as a downloadable attachment
+    return send_file(output, as_attachment=True, download_name=f"{report.title}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
