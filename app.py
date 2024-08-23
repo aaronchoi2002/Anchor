@@ -1,13 +1,13 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash, send_from_directory, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from datetime import datetime
 from werkzeug.utils import secure_filename
 from flask_migrate import Migrate
 from dotenv import load_dotenv
-import pandas as pd
 import io
+import pandas as pd
 
 load_dotenv()  # 從.env文件加載環境變量
 
@@ -71,6 +71,34 @@ def dashboard():
         reports = Report.query.order_by(Report.upload_date.desc()).paginate(page=page, per_page=5, error_out=False)
     return render_template("dashboard.html", reports=reports)
 
+@app.route("/download_excel")
+def download_excel():
+    # Query all reports from the database
+    reports = Report.query.all()
+
+    # Convert the reports data into a pandas DataFrame
+    data = [{
+        "Title": report.title,
+        "Date": report.date,
+        "Category": report.category,
+        "Content": report.content,
+        "Author": report.author,
+        "Share Regions": report.share_regions,
+        "Upload Date": report.upload_date
+    } for report in reports]
+
+    df = pd.DataFrame(data)
+
+    # Save the DataFrame to an Excel file in memory
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='openpyxl')
+    df.to_excel(writer, index=False, sheet_name='Reports')
+    writer.save()
+    output.seek(0)
+
+    # Send the Excel file to the client
+    return send_file(output, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', download_name='reports.xlsx', as_attachment=True)
+
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
@@ -82,7 +110,6 @@ def upload():
         share_regions = request.form.getlist("share_regions")
         file = request.files["file"]
         image_file = request.files["image"]
-        excel_file = request.files.get("excel")
 
         filename = None
         file_data = None
@@ -100,16 +127,6 @@ def upload():
             image_data = image_file.read()  # Read image binary data
         elif image_file:
             flash('Invalid image type. Only PNG, JPG, and JPEG files are allowed.')
-            return redirect(url_for('upload'))
-
-        # Process Excel file if uploaded
-        excel_data = None
-        if excel_file and allowed_file(excel_file.filename):
-            excel_filename = secure_filename(excel_file.filename)
-            excel_data = pd.read_excel(excel_file)  # Read the Excel file into a DataFrame
-            # Perform any processing with excel_data if necessary
-        elif excel_file:
-            flash('Invalid file type. Only Excel files are allowed.')
             return redirect(url_for('upload'))
 
         report = Report(
@@ -154,7 +171,6 @@ def edit_report(report_id):
 
         file = request.files["file"]
         image_file = request.files["image"]
-        excel_file = request.files.get("excel")
 
         if file and allowed_file(file.filename):
             report.filename = secure_filename(file.filename)
@@ -168,14 +184,6 @@ def edit_report(report_id):
             report.image_data = image_file.read()  # Update image binary data
         elif image_file:
             flash('Invalid image type. Only PNG, JPG, and JPEG files are allowed.')
-            return redirect(url_for('edit_report', report_id=report_id))
-
-        # Process Excel file if uploaded
-        if excel_file and allowed_file(excel_file.filename):
-            excel_data = pd.read_excel(excel_file)  # Read the Excel file into a DataFrame
-            # Perform any processing with excel_data if necessary
-        elif excel_file:
-            flash('Invalid file type. Only Excel files are allowed.')
             return redirect(url_for('edit_report', report_id=report_id))
 
         db.session.commit()
@@ -201,7 +209,7 @@ def logout():
     return redirect(url_for("login"))
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'pdf', 'xlsx', 'xls'}
+    ALLOWED_EXTENSIONS = {'pdf'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def allowed_image_file(filename):
