@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash, send_from_directory, make_response
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from datetime import datetime
@@ -7,15 +7,14 @@ from werkzeug.utils import secure_filename
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 import io
-import pandas as pd
 
-load_dotenv()  # 從.env文件加載環境變量
+load_dotenv()  # Load environment variables from .env file
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'supersecretkey')
 
-# 使用Heroku提供的DATABASE_URL環境變量
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("://", "ql://", 1)  # Heroku上的DATABASE_URL需要進行修改
+# Use the Heroku-provided DATABASE_URL environment variable
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL').replace("://", "ql://", 1)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -32,18 +31,16 @@ class Report(db.Model):
     file_data = db.Column(db.LargeBinary, nullable=True)  # Store file binary data
     image_filename = db.Column(db.String(100), nullable=True)
     image_data = db.Column(db.LargeBinary, nullable=True)  # Store image binary data
-    excel_filename = db.Column(db.String(100), nullable=True)  # Store Excel file name
+    excel_filename = db.Column(db.String(100), nullable=True)
     excel_data = db.Column(db.LargeBinary, nullable=True)  # Store Excel file binary data
     share_regions = db.Column(db.String(100), nullable=False)
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
 
-
-# 用戶的登錄信息
+# User login info
 stored_email = "a123456"
 stored_password = "a123456"
 stored_region = "JP"
 
-# 用於驗證用戶的函數
 def authenticate(email, password, region):
     if email == stored_email and password == stored_password and region == stored_region:
         return True
@@ -74,21 +71,6 @@ def dashboard():
         reports = Report.query.order_by(Report.upload_date.desc()).paginate(page=page, per_page=5, error_out=False)
     return render_template("dashboard.html", reports=reports)
 
-@app.route("/download_excel/<int:report_id>")
-def download_excel(report_id):
-    report = Report.query.get_or_404(report_id)
-    if report.excel_data:
-        return send_file(
-            io.BytesIO(report.excel_data),
-            as_attachment=True,
-            download_name=report.excel_filename,
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-    else:
-        flash('No Excel file found for this report')
-        return redirect(url_for('dashboard'))
-
-    
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
@@ -100,7 +82,7 @@ def upload():
         share_regions = request.form.getlist("share_regions")
         file = request.files["file"]
         image_file = request.files["image"]
-        excel_file = request.files.get("excel")
+        excel_file = request.files["excel"]
 
         filename = None
         file_data = None
@@ -126,7 +108,7 @@ def upload():
             excel_filename = secure_filename(excel_file.filename)
             excel_data = excel_file.read()  # Read Excel binary data
         elif excel_file:
-            flash('Invalid Excel file type. Only xlsx files are allowed.')
+            flash('Invalid Excel file type. Only XLSX files are allowed.')
             return redirect(url_for('upload'))
 
         report = Report(
@@ -150,6 +132,23 @@ def upload():
 
     return render_template("upload.html")
 
+@app.route("/download/<int:report_id>")
+def download(report_id):
+    report = Report.query.get_or_404(report_id)
+    return send_file(
+        io.BytesIO(report.file_data),
+        as_attachment=True,
+        download_name=report.filename
+    )
+
+@app.route("/download_excel/<int:report_id>")
+def download_excel(report_id):
+    report = Report.query.get_or_404(report_id)
+    return send_file(
+        io.BytesIO(report.excel_data),
+        as_attachment=True,
+        download_name=report.excel_filename
+    )
 
 @app.route("/edit_report/<int:report_id>", methods=["GET", "POST"])
 def edit_report(report_id):
@@ -165,6 +164,7 @@ def edit_report(report_id):
 
         file = request.files["file"]
         image_file = request.files["image"]
+        excel_file = request.files["excel"]
 
         if file and allowed_file(file.filename):
             report.filename = secure_filename(file.filename)
@@ -178,6 +178,13 @@ def edit_report(report_id):
             report.image_data = image_file.read()  # Update image binary data
         elif image_file:
             flash('Invalid image type. Only PNG, JPG, and JPEG files are allowed.')
+            return redirect(url_for('edit_report', report_id=report_id))
+
+        if excel_file and allowed_excel_file(excel_file.filename):
+            report.excel_filename = secure_filename(excel_file.filename)
+            report.excel_data = excel_file.read()  # Update Excel binary data
+        elif excel_file:
+            flash('Invalid Excel file type. Only XLSX files are allowed.')
             return redirect(url_for('edit_report', report_id=report_id))
 
         db.session.commit()
@@ -213,7 +220,6 @@ def allowed_image_file(filename):
 def allowed_excel_file(filename):
     ALLOWED_EXTENSIONS = {'xlsx'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 if __name__ == "__main__":
     with app.app_context():
