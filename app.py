@@ -74,6 +74,7 @@ def dashboard():
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
+        # Retrieve form data
         title = request.form["title"]
         date = request.form["date"]
         category = request.form["category"]
@@ -84,11 +85,12 @@ def upload():
         image_file = request.files["image"]
         excel_file = request.files["excel"]
 
+        # File handling logic
         filename = None
         file_data = None
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file_data = file.read()  # Read file binary data
+            file_data = file.read()
         else:
             flash('Invalid file type. Only PDF files are allowed.')
             return redirect(url_for('upload'))
@@ -97,7 +99,7 @@ def upload():
         image_data = None
         if image_file and allowed_image_file(image_file.filename):
             image_filename = secure_filename(image_file.filename)
-            image_data = image_file.read()  # Read image binary data
+            image_data = image_file.read()
         elif image_file:
             flash('Invalid image type. Only PNG, JPG, and JPEG files are allowed.')
             return redirect(url_for('upload'))
@@ -106,11 +108,12 @@ def upload():
         excel_data = None
         if excel_file and allowed_excel_file(excel_file.filename):
             excel_filename = secure_filename(excel_file.filename)
-            excel_data = excel_file.read()  # Read Excel binary data
+            excel_data = excel_file.read()
         elif excel_file:
-            flash('Invalid Excel file type. Only XLSX files are allowed.')
+            flash('Invalid excel type. Only XLSX files are allowed.')
             return redirect(url_for('upload'))
 
+        # Create new report entry
         report = Report(
             title=title,
             date=date,
@@ -131,6 +134,7 @@ def upload():
         return redirect(url_for('dashboard'))
 
     return render_template("upload.html")
+
 
 @app.route("/download/<int:report_id>")
 def download(report_id):
