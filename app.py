@@ -81,6 +81,7 @@ def upload():
         share_regions = request.form.getlist("share_regions")
         file = request.files["file"]
         image_file = request.files["image"]
+        excel_file = request.files.get("excel")
 
         filename = None
         file_data = None
@@ -98,6 +99,16 @@ def upload():
             image_data = image_file.read()  # Read image binary data
         elif image_file:
             flash('Invalid image type. Only PNG, JPG, and JPEG files are allowed.')
+            return redirect(url_for('upload'))
+
+        # Process Excel file if uploaded
+        excel_data = None
+        if excel_file and allowed_file(excel_file.filename):
+            excel_filename = secure_filename(excel_file.filename)
+            excel_data = pd.read_excel(excel_file)  # Read the Excel file into a DataFrame
+            # Perform any processing with excel_data if necessary
+        elif excel_file:
+            flash('Invalid file type. Only Excel files are allowed.')
             return redirect(url_for('upload'))
 
         report = Report(
@@ -142,6 +153,7 @@ def edit_report(report_id):
 
         file = request.files["file"]
         image_file = request.files["image"]
+        excel_file = request.files.get("excel")
 
         if file and allowed_file(file.filename):
             report.filename = secure_filename(file.filename)
@@ -155,6 +167,14 @@ def edit_report(report_id):
             report.image_data = image_file.read()  # Update image binary data
         elif image_file:
             flash('Invalid image type. Only PNG, JPG, and JPEG files are allowed.')
+            return redirect(url_for('edit_report', report_id=report_id))
+
+        # Process Excel file if uploaded
+        if excel_file and allowed_file(excel_file.filename):
+            excel_data = pd.read_excel(excel_file)  # Read the Excel file into a DataFrame
+            # Perform any processing with excel_data if necessary
+        elif excel_file:
+            flash('Invalid file type. Only Excel files are allowed.')
             return redirect(url_for('edit_report', report_id=report_id))
 
         db.session.commit()
@@ -180,7 +200,7 @@ def logout():
     return redirect(url_for("login"))
 
 def allowed_file(filename):
-    ALLOWED_EXTENSIONS = {'pdf'}
+    ALLOWED_EXTENSIONS = {'pdf', 'xlsx', 'xls'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def allowed_image_file(filename):
