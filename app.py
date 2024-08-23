@@ -6,7 +6,6 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 from flask_migrate import Migrate
 from dotenv import load_dotenv
-import pandas as pd
 import io
 
 load_dotenv()  # 從.env文件加載環境變量
