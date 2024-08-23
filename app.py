@@ -32,8 +32,11 @@ class Report(db.Model):
     file_data = db.Column(db.LargeBinary, nullable=True)  # Store file binary data
     image_filename = db.Column(db.String(100), nullable=True)
     image_data = db.Column(db.LargeBinary, nullable=True)  # Store image binary data
+    excel_filename = db.Column(db.String(100), nullable=True)  # Store Excel file name
+    excel_data = db.Column(db.LargeBinary, nullable=True)  # Store Excel file binary data
     share_regions = db.Column(db.String(100), nullable=False)
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+
 
 # 用戶的登錄信息
 stored_email = "a123456"
@@ -74,31 +77,17 @@ def dashboard():
 @app.route("/download_excel/<int:report_id>")
 def download_excel(report_id):
     report = Report.query.get_or_404(report_id)
-    
-    # Prepare a pandas DataFrame with the report data
-    data = {
-        "Title": [report.title],
-        "Date": [report.date],
-        "Category": [report.category],
-        "Content": [report.content],
-        "Author": [report.author],
-        "Share Regions": [report.share_regions]
-    }
-    df = pd.DataFrame(data)
+    if report.excel_data:
+        return send_file(
+            io.BytesIO(report.excel_data),
+            as_attachment=True,
+            download_name=report.excel_filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    else:
+        flash('No Excel file found for this report')
+        return redirect(url_for('dashboard'))
 
-    # Create an in-memory buffer to store the Excel file
-    output = io.BytesIO()
-
-    # Use a context manager to handle the Excel writer
-    with pd.ExcelWriter(output, engine='openpyxl') as writer:
-        df.to_excel(writer, index=False, sheet_name='Report')
-        writer.close()
-    
-    # Seek to the beginning of the stream to ensure all data is written
-    output.seek(0)
-    
-    # Return the file as a downloadable attachment
-    return send_file(output, as_attachment=True, download_name=f"{report.title}.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
@@ -111,6 +100,7 @@ def upload():
         share_regions = request.form.getlist("share_regions")
         file = request.files["file"]
         image_file = request.files["image"]
+        excel_file = request.files.get("excel")
 
         filename = None
         file_data = None
@@ -130,6 +120,15 @@ def upload():
             flash('Invalid image type. Only PNG, JPG, and JPEG files are allowed.')
             return redirect(url_for('upload'))
 
+        excel_filename = None
+        excel_data = None
+        if excel_file and allowed_excel_file(excel_file.filename):
+            excel_filename = secure_filename(excel_file.filename)
+            excel_data = excel_file.read()  # Read Excel binary data
+        elif excel_file:
+            flash('Invalid Excel file type. Only xlsx files are allowed.')
+            return redirect(url_for('upload'))
+
         report = Report(
             title=title,
             date=date,
@@ -140,6 +139,8 @@ def upload():
             file_data=file_data,
             image_filename=image_filename,
             image_data=image_data,
+            excel_filename=excel_filename,
+            excel_data=excel_data,
             share_regions=",".join(share_regions)
         )
         db.session.add(report)
@@ -149,14 +150,6 @@ def upload():
 
     return render_template("upload.html")
 
-@app.route("/download/<int:report_id>")
-def download(report_id):
-    report = Report.query.get_or_404(report_id)
-    return send_file(
-        io.BytesIO(report.file_data),
-        as_attachment=True,
-        download_name=report.filename
-    )
 
 @app.route("/edit_report/<int:report_id>", methods=["GET", "POST"])
 def edit_report(report_id):
@@ -216,6 +209,11 @@ def allowed_file(filename):
 def allowed_image_file(filename):
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def allowed_excel_file(filename):
+    ALLOWED_EXTENSIONS = {'xlsx'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 if __name__ == "__main__":
     with app.app_context():
