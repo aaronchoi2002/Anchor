@@ -37,8 +37,8 @@ class Report(db.Model):
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
 
 # User login info
-stored_email = "a123456"
-stored_password = "a123456"
+stored_email = "barry"
+stored_password = "660906"
 stored_region = "JP"
 
 def authenticate(email, password, region):
